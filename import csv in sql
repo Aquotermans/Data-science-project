@@ -1,0 +1,46 @@
+import pyodbc
+import csv
+import os
+
+#Data needed to connect to the server and gatter the file
+server = 'SERVER_NAME'
+database = 'DB_NAME'
+trusted_connection = 'yes'
+csv_file_path = r'FILE_PATH'
+
+#Name the table like the file
+table_name = os.path.splitext(os.path.basename(csv_file_path))[0]
+print("Part 1/3 completed")
+
+#Connection to DB using Windows authentication
+conn = pyodbc.connect('DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';Trusted_Connection=' + trusted_connection + ';')
+cursor = conn.cursor()
+
+
+#Reading CSV file and creation of the header in the DB
+with open(csv_file_path, newline='', encoding='utf-8') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=';')
+    header = next(csv_reader)
+    columns = [f"[{col.strip()}] NVARCHAR(MAX)" for col in header]
+    create_table_sql = f'''CREATE TABLE {table_name} (
+        {', '.join(columns)}
+    )'''
+    cursor.execute(create_table_sql)
+    print("Part 2/3 completed")
+    
+    #Insert data in the DB
+    insert_sql = f"INSERT INTO {table_name} VALUES ({', '.join(['?'] * len(header))})"
+    total = sum(1 for row in csv_reader)
+    csv_file.seek(0)
+    next(csv_reader)
+    compteur = 0
+    for row in csv_reader:
+        cursor.execute(insert_sql, row)
+        compteur += 1
+        pourcentage = compteur / total * 100
+        print(f"Pourcentage de complétion : {pourcentage:.2f}%")
+
+#Close connexion to DB
+conn.commit()
+conn.close()
+print("Part 3/3 completed")

@@ -16,3 +16,10 @@ WHERE parent_object_id = OBJECT_ID('PERSON_DIAGNOSTICS')
 #Drop FK
 ALTER TABLE PERSON_DIAGNOSTICS
 DROP CONSTRAINT <foreign_key_constraint_name>;
+
+#Make a column primary key
+ALTER TABLE contact
+ALTER COLUMN contact_id bigint NOT NULL; 
+
+ALTER TABLE contact
+ADD PRIMARY KEY (contact_id); 

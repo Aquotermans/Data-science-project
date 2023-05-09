@@ -1,0 +1,9 @@
+SELECT top(1000)	c.*, cd.diagnostic_icd10, cd.contact_diagnostic_label
+  FROM [cegedim].[dbo].[contact] as c
+
+  JOIN [cegedim].[dbo].[CONTACT_DIAGNOSTICS] as cd on c.contact_id = cd.contact_id 
+
+	and cd.diagnostic_icd10 not like 'C34%' 
+	and cd.diagnostic_icd10 not like 'i%'
+
+  where c.person_age > 45;

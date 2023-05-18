@@ -1,0 +1,74 @@
+WITH temp_table AS (SELECT top(20)
+    count(concept_id) as count,
+    mm.concept_id AS temp_concept_id
+FROM
+    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
+    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
+    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+WHERE
+    pbc.person_age BETWEEN 49 AND 65
+    AND pbc.start_change_date BETWEEN '2020-01-01' AND '2023-12-31'
+    AND concept_id IS NOT NULL
+
+group by concept_id
+order by count desc)
+
+SELECT
+    pbc.person_id,
+    pbc.value,
+    mm.concept_id AS concept_id
+FROM
+    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
+    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
+    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+WHERE
+    pbc.person_age BETWEEN 49 AND 65
+
+    AND pbc.start_change_date BETWEEN '2020-01-01' AND '2023-12-31'
+    AND concept_id IS NOT NULL
+	AND concept_id IN (select temp_concept_id FROM temp_table)
+    AND EXISTS (
+        SELECT 1
+        FROM [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS sub_pbc
+        WHERE pbc.person_id = sub_pbc.person_id
+        HAVING COUNT(sub_pbc.contact_id) > 4)
+GROUP BY
+    mm.concept_id,
+    pbc.person_id,
+    pbc.value;
+
+
+####################################################################################################################################################
+
+	SELECT top(200)
+    count(concept_id) as count,
+    mm.concept_name AS name
+FROM
+    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
+    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
+    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+WHERE
+    pbc.person_age BETWEEN 49 AND 65
+    AND pbc.start_change_date BETWEEN '2020-01-01' AND '2023-12-31'
+    AND concept_id IS NOT NULL
+
+group by concept_name
+order by count desc;
+
+#######################################################################################################################################################
+
+SELECT  pmc.person_id,
+AVG(pmc.value) AS avg_value,
+MIN(pmc.value) AS MIN_value,
+MAX(pmc.value) AS MAX_value,
+pmc.person_measure_label
+
+FROM [cegedim].[dbo].person_id_nn AS nn
+INNER JOIN [cegedim].[dbo].PERSON_MEASURE_CHANGES AS pmc ON nn.person_id = pmc.person_id
+WHERE start_change_date > '2018-01-01' AND person_measure_label NOT LIKE 'Taille%'
+
+GROUP BY pmc.person_measure_label, pmc.person_id
+ORDER BY person_id;
+
+#######################################################################################################################################################
+

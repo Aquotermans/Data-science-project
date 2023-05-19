@@ -72,3 +72,16 @@ ORDER BY person_id;
 
 #######################################################################################################################################################
 
+SELECT  pmc.person_id,
+pmc.value,
+pmc.person_measure_label
+
+FROM [cegedim].[dbo].person_id_nn AS nn
+INNER JOIN [cegedim].[dbo].PERSON_MEASURE_CHANGES AS pmc ON nn.person_id = pmc.person_id
+WHERE start_change_date > '2018-01-01' AND person_measure_label NOT LIKE 'Taille%'
+
+GROUP BY pmc.person_measure_label, pmc.person_id,pmc.value
+ORDER BY person_id;
+
+#######################################################################################################################################################
+

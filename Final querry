@@ -84,4 +84,32 @@ GROUP BY pmc.person_measure_label, pmc.person_id,pmc.value
 ORDER BY person_id;
 
 #######################################################################################################################################################
+Nouvelle table avec compteur de diag pour les C34 LIKE
 
+WITH filtre AS (
+  SELECT person_id 
+  FROM CONTACT_DIAGNOSTICS 
+  WHERE diagnostic_icd10 LIKE 'c34%'
+)
+SELECT COUNT(diagnostic_icd10) AS cmpt,
+       diagnostic_icd10 AS diag,
+	   diagnostic_label
+INTO CMPT_DIAG_C34
+FROM CONTACT_DIAGNOSTICS
+WHERE person_id IN (select person_id from filtre)
+AND diagnostic_icd10 NOT LIKE 'C34'
+GROUP BY diagnostic_icd10, diagnostic_label
+ORDER BY cmpt DESC;
+
+#######################################################################################################################################################
+Nouvelle table compteur de diag
+
+SELECT COUNT(diagnostic_icd10) AS cmpt,
+       diagnostic_icd10 AS diag,
+	   diagnostic_label
+INTO CMPT_DIAG_ALL
+FROM CONTACT_DIAGNOSTICS
+GROUP BY diagnostic_icd10, diagnostic_label
+ORDER BY cmpt DESC;
+
+#######################################################################################################################################################

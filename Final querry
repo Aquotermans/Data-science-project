@@ -113,3 +113,21 @@ GROUP BY diagnostic_icd10, diagnostic_label
 ORDER BY cmpt DESC;
 
 #######################################################################################################################################################
+Créer une table permanante pour faire de query plus rapide
+
+WITH cmpt AS 
+(SELECT
+COUNT(DISTINCT contact_id) AS count
+FROM contact
+WHERE contact_date > '2020-01-01'
+)
+
+SELECT distinct p.person_id AS person_id
+INTO FILTERED_PERSON_ID
+FROM person AS p 
+INNER JOIN contact AS c ON c.person_id = p.person_id
+WHERE (SELECT count FROM cmpt) > 3
+AND contact_date > '2020-01-01'
+AND YEAR_OF_BIRTH BETWEEN 1950 AND 1970;
+
+#######################################################################################################################################################

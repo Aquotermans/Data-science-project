@@ -156,10 +156,14 @@ AND start_change_date > '2018-01-01'
 AND person_measure_label NOT LIKE 'Taille%'
 
 #######################################################################################################################################################
-Selectionner les diags
+Selectionner les diags sans c34
 
 SELECT person_id, diagnostic_icd10 AS icd10
 FROM
     [cegedim].[dbo].CONTACT_DIAGNOSTICS
 	
 WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])
+AND diagnostic_icd10 NOT LIKE 'c34%'
+
+#######################################################################################################################################################
+

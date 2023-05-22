@@ -131,3 +131,35 @@ AND contact_date > '2020-01-01'
 AND YEAR_OF_BIRTH BETWEEN 1950 AND 1970;
 
 #######################################################################################################################################################
+Selectionner les bio_change v1
+
+SELECT pbc.person_id, pbc.value, mm.concept_name
+FROM
+    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
+    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
+    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+
+WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])
+AND mm.concept_name IS NOT NULL
+AND start_change_date > '2018-01-01'
+
+
+#######################################################################################################################################################
+Selectionner les measure_change v1
+
+SELECT person_id, value, person_measure_label AS measurement
+FROM
+    [cegedim].[dbo].PERSON_MEASURE_CHANGES
+
+WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])
+AND start_change_date > '2018-01-01'
+AND person_measure_label NOT LIKE 'Taille%'
+
+#######################################################################################################################################################
+Selectionner les diags
+
+SELECT person_id, diagnostic_icd10 AS icd10
+FROM
+    [cegedim].[dbo].CONTACT_DIAGNOSTICS
+	
+WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])

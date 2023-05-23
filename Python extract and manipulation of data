@@ -1,0 +1,135 @@
+import pandas as pd
+
+#########################
+###Importer bio_change###
+#########################
+# Path
+bio_path = r'###bio_change.csv'
+print('1. Path finished')
+
+# Nommer les colonnes
+header = ['person_id', 'bio_value','concept_id']
+print('2. Nommage de colonnes fini')
+
+# Nom de la colonne à split
+colonne = 'concept_id'
+
+# Lire le CSV, préciser le séparateur, donner un header
+df = pd.read_csv(bio_path, names=header, sep=';')
+print('3. Upload fini')
+
+
+#Changer les valeurs de en numériques
+df['bio_value'] = pd.to_numeric(df['bio_value'], errors='coerce')
+print('4. Changement fini vers numérite')
+
+#Faire un pivot avec les tables en ajoutant le min, max, moyenne
+bio_min = df.pivot_table(index='person_id', columns='concept_id', values='bio_value', aggfunc=['min'])
+bio_max = df.pivot_table(index='person_id', columns='concept_id', values='bio_value', aggfunc=['max'])
+bio_avg = df.pivot_table(index='person_id', columns='concept_id', values='bio_value', aggfunc=['mean'])
+print('5. Pivot fini')
+
+
+df_bio = pd.concat([bio_min, bio_max, bio_avg], axis=1)
+print('6. Pivot 2 fini')
+
+
+#############################
+###Importer measure_change###
+#############################
+
+# Path
+measure_path = r'####\measure_change.csv'
+print('1. Path finished measure')
+
+# Nommer les colonnes
+header = ['person_id', 'measure_value','measure_label']
+print('2. Nommage de colonnes fini measure')
+
+# Nom de la colonne à split
+colonne = 'measure_label'
+
+# Lire le CSV, préciser le séparateur, donner un header
+df_measure = pd.read_csv(measure_path, names=header, sep=';')
+print('3. Upload fini measure')
+
+
+#Changer les valeurs de en numériques
+df_measure['measure_value'] = pd.to_numeric(df_measure['measure_value'], errors='coerce')
+print('4. Changement fini vers numérite measure')
+
+#Faire un pivot avec les tables en ajoutant le min, max, moyenne
+measure_min = df_measure.pivot_table(index='person_id', columns='measure_label', values='measure_value', aggfunc='min')
+measure_max = df_measure.pivot_table(index='person_id', columns='measure_label', values='measure_value', aggfunc='max')
+measure_avg = df_measure.pivot_table(index='person_id', columns='measure_label', values='measure_value', aggfunc='mean')
+
+print('5. Pivot fini measure')
+
+df_measure = pd.concat([measure_min, measure_max, measure_avg], axis=1)
+print('6. Pivot 2 fini measure')
+
+#ajouter au précédent df
+df_bio_mea = df_bio.merge(df_measure, on='person_id', how='inner')
+
+###################
+###Importer diag###
+###################
+
+# Path
+icd10_path = r'####\v1\diag.csv'
+print('1. Path finished measure')
+
+# Nommer les colonnes
+header = ['person_id', 'icd10']
+print('2. Nommage de colonnes fini measure')
+
+# Lire le CSV, préciser le séparateur, donner un header
+df_icd10 = pd.read_csv(icd10_path, names=header, sep=';')
+print('3. Upload fini measure')
+
+# Use pivot_table to handle duplicate entries
+df_diag = df_icd10.pivot_table(index='person_id', columns='icd10', values='icd10',
+                              aggfunc=lambda x: 1 if len(x) > 0 else 0, fill_value=0)
+
+#ajouter au précédent df
+df_bio_mea_diag = df_bio_mea.merge(df_diag, on='person_id', how='left')
+
+##################
+###Importer C34###
+##################
+
+# Path
+c34_path = r'####\v1\c34.csv'
+print('1. Path c34 finished')
+
+# Nommer les colonnes
+header = ['person_id', 'c34']
+print('2. Nommage de colonnes fini')
+
+# Lire le CSV, préciser le séparateur, donner un header
+df_c34 = pd.read_csv(c34_path, names=header, sep=';')
+print('3. Upload c34 fini')
+
+# Changer les valeurs en numériques
+df_c34['c34'] = pd.to_numeric(df_c34['c34'], errors='coerce')
+print('4. Changement fini vers numérique c34')
+
+
+#Ajouter une colonne c34 à df_bio_mea_diag
+df_bio_mea_diag['c34'] = 0
+
+#Ajouter un 1 si l'ID se retrouve dans df_c34
+mask = df_bio_mea_diag.index.isin(df_c34['person_id'])
+df_bio_mea_diag.loc[mask, 'c34'] = 1   
+
+#Combien de personnes ont le cancer du poumon dans notre DF final ?
+count = (df_bio_mea_diag['c34'] == 1).sum()
+print(count, ' personnes ont le caner du poumon dans notre DF')
+
+
+##############################
+###Option exporter vers csv###
+##############################
+#df_bio_mea_diag.to_csv(r'####\v1\base_model.csv')
+#print('Exportation en csv  finie')
+

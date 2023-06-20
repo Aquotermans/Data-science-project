@@ -1,0 +1,93 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import tree
+from sklearn import datasets
+from sklearn.tree import export_graphviz
+import subprocess
+
+##########################
+###Création du data set###
+##########################
+
+# Load the dataset
+path = r'C:\Users\Claw\Desktop\TFE\model predictif\v1\base_model.csv'
+dataset = pd.read_csv(path, sep=',')
+
+dataset.drop(dataset.columns[[0, 4573]], axis=1, inplace=True)
+#dataset.drop(dataset.columns[[0]], axis=1, inplace=True)
+
+
+######################
+###Modèle prédictif###
+######################
+# Separate the target column (c34) from the features
+X = dataset.iloc[:, 0:4597].values
+y = dataset['c34'].values
+
+# Create regressor object
+regressor = RandomForestClassifier(n_estimators=5, random_state=0,max_depth=1,n_jobs=4)
+regressor.fit(X, y)
+
+
+####################
+###Plot bar chart###
+####################
+
+# Get feature importances
+importances = regressor.feature_importances_
+
+# Sort the feature importances in descending order
+sorted_indices = np.argsort(importances)[::-1]
+
+# Select the top k most important features
+k = 20  # Number of features to select
+selected_features = sorted_indices[:k]
+
+# Get the column names corresponding to the selected features
+selected_column_names = dataset.columns[selected_features]
+
+# Create a new DataFrame with the selected features
+reduced_df = dataset[selected_column_names]
+
+# Print the selected column names
+print("Selected Columns:")
+print(selected_column_names)
+
+# Print the shape of the reduced DataFrame
+print("Shape of reduced DataFrame:", reduced_df.shape)
+
+# Create a bar plot of feature importances
+plt.figure(figsize=(k, 6))
+plt.bar(range(len(selected_column_names)), importances[selected_features], align='center')
+plt.xticks(range(len(selected_column_names)), [label[:15] for label in selected_column_names], rotation='vertical')
+
+plt.xlabel('Features')
+plt.ylabel('Importance')
+plt.title('Feature Importances')
+plt.tight_layout()
+plt.show()
+
+
+###############
+###Plot tree###
+###############
+# Get a tree from the forest (e.g., the first tree)
+tree_index = 99  # Select the tree index you want to plot
+tree = regressor.estimators_[tree_index]
+
+# Export the tree as a DOT file
+export_graphviz(tree, out_file='tree.dot', filled=True)
+
+# Convert the DOT file to a PNG image (requires Graphviz installation)
+dot_file_path = r'C:\Users\Claw\tree.dot'
+subprocess.call(['dot', '-Tpng', dot_file_path, '-o', 'tree.png','-Gdpi=450'])
+
+# Display the tree plot
+image = plt.imread('tree.png')
+plt.figure(figsize=(24, 12))
+plt.imshow(image)
+plt.axis('off')
+plt.show()

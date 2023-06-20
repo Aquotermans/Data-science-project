@@ -1,0 +1,89 @@
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, BatchNormalization
+import numpy as np
+from keras.engine import base_layer
+
+##########################
+###Création du data set###
+##########################
+
+# Importer le data set et retier les colonnes inutiles
+path = r'C:\Users\Claw\Desktop\TFE\model predictif\v1\base_model.csv'
+dataset = pd.read_csv(path, sep=',')
+print('Importation fini')
+
+#Drop person_id et lobectomie
+dataset.drop(dataset.columns[[0, 4573]], axis=1, inplace = True)
+print('Drop fini')
+
+# Définir le predictor et le predictant
+X = dataset.iloc[:, 0:4598].values
+y = dataset['c34'].values
+
+# Randomisation des données 60% training 40% test
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
+print('Définition des X et Y train/test fini')
+
+########################
+###Structure du model###
+########################
+
+#Définition du modèle - type séquentiel
+model = tf.keras.Sequential()
+
+#Normalisation des données
+model.add(BatchNormalization(input_shape=(X_train.shape[1],)))
+
+#Ajout du input layer
+model.add(Dense(4598, activation="relu", name="Input_Layer"))
+
+#Ajout 10 layers
+for i in range(0, 10):
+    model.add(Dense(100, activation="relu", name="Layer_{}".format(i + 1)))
+
+
+#Ajout du output layer sigmoid
+model.add(Dense(1, activation="sigmoid", name="Output_Layer"))
+
+#########Ajout du output layer linéaire#################
+#model.add(Dense(1, activation="sigmoid", name="Linear"))  
+
+#Choix des la loss function et de l'optimizer
+model.compile(optimizer='adam', loss='BinaryCrossentropy')
+
+print('Structure du réseau fini')
+
+########################
+###Training du modèle###
+########################
+
+history = model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
+
+# Make predictions
+predictions = model.predict(X)
+print('5')
+
+##########################
+###évaluation du modèle###
+##########################
+
+from sklearn.metrics import accuracy_score, precision_score
+
+# Assuming you have obtained the predicted labels from your model
+y_pred = model.predict(X_test)
+
+# Convert the predicted probabilities to binary labels (0 or 1)
+y_pred_binary = (y_pred > 0.5).astype(int)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred_binary)
+
+# Calculate precision
+precision = precision_score(y_test, y_pred_binary)
+
+
+print("Accuracy:", accuracy)
+print("Precision:", precision)

@@ -2,9 +2,9 @@ WITH temp_table AS (SELECT top(20)
     count(concept_id) as count,
     mm.concept_id AS temp_concept_id
 FROM
-    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
-    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
-    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+    [###].[dbo].XXX AS pbc
+    LEFT JOIN [###].[dbo].CODELIST_EXTRACT AS ce ON pbc.YYYl = ce.label
+    LEFT JOIN [###].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
 WHERE
     pbc.person_age BETWEEN 49 AND 65
     AND pbc.start_change_date BETWEEN '2020-01-01' AND '2023-12-31'
@@ -14,13 +14,13 @@ group by concept_id
 order by count desc)
 
 SELECT
-    pbc.person_id,
+    pbc.AAA,
     pbc.value,
     mm.concept_id AS concept_id
 FROM
-    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
-    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
-    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+    [###].[dbo].XXX AS pbc
+    LEFT JOIN [###].[dbo].CODELIST_EXTRACT AS ce ON pbc.YYYl = ce.label
+    LEFT JOIN [###].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
 WHERE
     pbc.person_age BETWEEN 49 AND 65
 
@@ -29,12 +29,12 @@ WHERE
 	AND concept_id IN (select temp_concept_id FROM temp_table)
     AND EXISTS (
         SELECT 1
-        FROM [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS sub_pbc
-        WHERE pbc.person_id = sub_pbc.person_id
+        FROM [###].[dbo].XXX AS sub_pbc
+        WHERE pbc.AAA = sub_pbc.AAA
         HAVING COUNT(sub_pbc.contact_id) > 4)
 GROUP BY
     mm.concept_id,
-    pbc.person_id,
+    pbc.AAA,
     pbc.value;
 
 
@@ -44,9 +44,9 @@ GROUP BY
     count(concept_id) as count,
     mm.concept_name AS name
 FROM
-    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
-    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
-    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+    [###].[dbo].XXX AS pbc
+    LEFT JOIN [###].[dbo].CODELIST_EXTRACT AS ce ON pbc.YYYl = ce.label
+    LEFT JOIN [###].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
 WHERE
     pbc.person_age BETWEEN 49 AND 65
     AND pbc.start_change_date BETWEEN '2020-01-01' AND '2023-12-31'
@@ -57,59 +57,59 @@ order by count desc;
 
 #######################################################################################################################################################
 
-SELECT  pmc.person_id,
+SELECT  pmc.AAA,
 AVG(pmc.value) AS avg_value,
 MIN(pmc.value) AS MIN_value,
 MAX(pmc.value) AS MAX_value,
-pmc.person_measure_label
+pmc.ZZZ
 
-FROM [cegedim].[dbo].person_id_nn AS nn
-INNER JOIN [cegedim].[dbo].PERSON_MEASURE_CHANGES AS pmc ON nn.person_id = pmc.person_id
-WHERE start_change_date > '2018-01-01' AND person_measure_label NOT LIKE 'Taille%'
+FROM [###].[dbo].AAA_nn AS nn
+INNER JOIN [###].[dbo].BBB AS pmc ON nn.AAA = pmc.AAA
+WHERE start_change_date > '2018-01-01' AND ZZZ NOT LIKE 'Taille%'
 
-GROUP BY pmc.person_measure_label, pmc.person_id
-ORDER BY person_id;
+GROUP BY pmc.ZZZ, pmc.AAA
+ORDER BY AAA;
 
 #######################################################################################################################################################
 
-SELECT  pmc.person_id,
+SELECT  pmc.AAA,
 pmc.value,
-pmc.person_measure_label
+pmc.ZZZ
 
-FROM [cegedim].[dbo].person_id_nn AS nn
-INNER JOIN [cegedim].[dbo].PERSON_MEASURE_CHANGES AS pmc ON nn.person_id = pmc.person_id
-WHERE start_change_date > '2018-01-01' AND person_measure_label NOT LIKE 'Taille%'
+FROM [###].[dbo].AAA_nn AS nn
+INNER JOIN [###].[dbo].BBB AS pmc ON nn.AAA = pmc.AAA
+WHERE start_change_date > '2018-01-01' AND ZZZ NOT LIKE 'Taille%'
 
-GROUP BY pmc.person_measure_label, pmc.person_id,pmc.value
-ORDER BY person_id;
+GROUP BY pmc.ZZZ, pmc.AAA,pmc.value
+ORDER BY AAA;
 
 #######################################################################################################################################################
-Nouvelle table avec compteur de diag pour les C34 LIKE
+Nouvelle table avec compteur de DDD pour les C34 LIKE
 
 WITH filtre AS (
-  SELECT person_id 
-  FROM CONTACT_DIAGNOSTICS 
-  WHERE diagnostic_icd10 LIKE 'c34%'
+  SELECT AAA 
+  FROM CONTACT_DDD 
+  WHERE CCC LIKE 'c34%'
 )
-SELECT COUNT(diagnostic_icd10) AS cmpt,
-       diagnostic_icd10 AS diag,
-	   diagnostic_label
-INTO CMPT_DIAG_C34
-FROM CONTACT_DIAGNOSTICS
-WHERE person_id IN (select person_id from filtre)
-AND diagnostic_icd10 NOT LIKE 'C34'
-GROUP BY diagnostic_icd10, diagnostic_label
+SELECT COUNT(CCC) AS cmpt,
+       CCC AS DDD,
+	   DDD_label
+INTO CMPT_DDD_C34
+FROM CONTACT_DDD
+WHERE AAA IN (select AAA from filtre)
+AND CCC NOT LIKE 'C34'
+GROUP BY CCC, DDD_label
 ORDER BY cmpt DESC;
 
 #######################################################################################################################################################
-Nouvelle table compteur de diag
+Nouvelle table compteur de DDD
 
-SELECT COUNT(diagnostic_icd10) AS cmpt,
-       diagnostic_icd10 AS diag,
-	   diagnostic_label
-INTO CMPT_DIAG_ALL
-FROM CONTACT_DIAGNOSTICS
-GROUP BY diagnostic_icd10, diagnostic_label
+SELECT COUNT(CCC) AS cmpt,
+       CCC AS DDD,
+	   DDD_label
+INTO CMPT_DDD_ALL
+FROM CONTACT_DDD
+GROUP BY CCC, DDD_label
 ORDER BY cmpt DESC;
 
 #######################################################################################################################################################
@@ -122,10 +122,10 @@ FROM contact
 WHERE contact_date > '2020-01-01'
 )
 
-SELECT distinct p.person_id AS person_id
-INTO FILTERED_PERSON_ID
+SELECT distinct p.AAA AS AAA
+INTO FILTERED_AAA
 FROM person AS p 
-INNER JOIN contact AS c ON c.person_id = p.person_id
+INNER JOIN contact AS c ON c.AAA = p.AAA
 WHERE (SELECT count FROM cmpt) > 3
 AND contact_date > '2020-01-01'
 AND YEAR_OF_BIRTH BETWEEN 1950 AND 1970;
@@ -133,13 +133,13 @@ AND YEAR_OF_BIRTH BETWEEN 1950 AND 1970;
 #######################################################################################################################################################
 Selectionner les bio_change v1
 
-SELECT pbc.person_id, pbc.value, mm.concept_name
+SELECT pbc.AAA, pbc.value, mm.concept_name
 FROM
-    [cegedim].[dbo].PERSON_BIOLOGIC_CHANGES AS pbc
-    LEFT JOIN [cegedim].[dbo].CODELIST_EXTRACT AS ce ON pbc.biologic_exam_label = ce.label
-    LEFT JOIN [cegedim].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
+    [###].[dbo].XXX AS pbc
+    LEFT JOIN [###].[dbo].CODELIST_EXTRACT AS ce ON pbc.YYYl = ce.label
+    LEFT JOIN [###].[dbo].mapping_measurement AS mm ON ce.code = mm.measurement_source_value
 
-WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])
+WHERE AAA IN (SELECT AAA FROM [###].[dbo].[FILTERED_AAA])
 AND mm.concept_name IS NOT NULL
 AND start_change_date > '2018-01-01'
 
@@ -147,23 +147,23 @@ AND start_change_date > '2018-01-01'
 #######################################################################################################################################################
 Selectionner les measure_change v1
 
-SELECT person_id, value, person_measure_label AS measurement
+SELECT AAA, value, ZZZ AS measurement
 FROM
-    [cegedim].[dbo].PERSON_MEASURE_CHANGES
+    [###].[dbo].BBB
 
-WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])
+WHERE AAA IN (SELECT AAA FROM [###].[dbo].[FILTERED_AAA])
 AND start_change_date > '2018-01-01'
-AND person_measure_label NOT LIKE 'Taille%'
+AND ZZZ NOT LIKE 'Taille%'
 
 #######################################################################################################################################################
-Selectionner les diags sans c34
+Selectionner les DDDs sans c34
 
-SELECT person_id, diagnostic_icd10 AS icd10
+SELECT AAA, CCC AS icd10
 FROM
-    [cegedim].[dbo].CONTACT_DIAGNOSTICS
+    [###].[dbo].CONTACT_DDD
 	
-WHERE person_id IN (SELECT person_id FROM [cegedim].[dbo].[FILTERED_PERSON_ID])
-AND diagnostic_icd10 NOT LIKE 'c34%'
+WHERE AAA IN (SELECT AAA FROM [###].[dbo].[FILTERED_AAA])
+AND CCC NOT LIKE 'c34%'
 
 #######################################################################################################################################################
 

@@ -13,7 +13,7 @@ import subprocess
 ##########################
 
 # Load the dataset
-path = r'C:\Users\Claw\Desktop\TFE\model predictif\v1\base_model.csv'
+path = r'###'
 dataset = pd.read_csv(path, sep=',')
 
 dataset.drop(dataset.columns[[0, 4573]], axis=1, inplace=True)
@@ -23,9 +23,9 @@ dataset.drop(dataset.columns[[0, 4573]], axis=1, inplace=True)
 ######################
 ###Modèle prédictif###
 ######################
-# Separate the target column (c34) from the features
+# Separate the target column (###) from the features
 X = dataset.iloc[:, 0:4597].values
-y = dataset['c34'].values
+y = dataset['###'].values
 
 # Create regressor object
 regressor = RandomForestClassifier(n_estimators=5, random_state=0,max_depth=1,n_jobs=4)

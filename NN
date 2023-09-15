@@ -11,7 +11,7 @@ from keras.engine import base_layer
 ##########################
 
 # Importer le data set et retier les colonnes inutiles
-path = r'C:\Users\Claw\Desktop\TFE\model predictif\v1\base_model.csv'
+path = r'C:###'
 dataset = pd.read_csv(path, sep=',')
 print('Importation fini')
 
